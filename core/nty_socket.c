@@ -55,6 +55,16 @@
 //       3.2. 执行完(真实的系统调用, 如:read/write)之后，??? 
 
 
+
+/*
+    1. EPOLL_CTL_ADD
+
+    2. read/ write
+
+    3. EPOLL_CTL_DEL
+
+    防止在调用read/write时，fd又被触发
+*/
 static uint32_t nty_pollevent_2epoll( short events )
 {
 	uint32_t e = 0;	
