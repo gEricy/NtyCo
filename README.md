@@ -60,5 +60,22 @@ $ ./bin/nty_websocket_server
   2. 借助进程
 
      > 让进程挂在某个CPU上，使得该进程只在绑定的CPU上运行（注意：该CPU除了该进程，还可以运行其他进程）
+     >
+     > ```c
+     > // 进程绑定到某个CPU核心
+     > int process_bind(void) {
+     > 	int num = sysconf(_SC_NPROCESSORS_CONF);
+     > 	pid_t self_id = syscall(__NR_gettid);
+     > 	cpu_set_t mask;
+     > 
+     > 	CPU_ZERO(&mask);
+     > 	CPU_SET(self_id % num, &mask);
+     > 
+     > 	sched_setaffinity(0, sizeof(mask), &mask);
+     > 	mulcore_entry(9096);
+     > }
+     > ```
+     >
+     > 
 
      > 每个进程一个调度器
