@@ -1,16 +1,10 @@
 ## NtyCo
 
-#### coroutine
-[实现原理](https://github.com/wangbojing/NtyCo/wiki/NtyCo%E7%9A%84%E5%AE%9E%E7%8E%B0)
+该协程库，相较于微信libco，实现原理一模一样，采用IO多路复用的事件驱动与协程切换发挥出巨大的“威力”
 
+不同点：NtyCo没有自己封装实现自己的【条件变量Cond】
 
-## details
-#### coroutine FSM
-![](http://bojing.wang/wp-content/uploads/2018/08/status_machine.png)
-
-#### storage structure (ready, wait, sleep, status)
-![](http://bojing.wang/wp-content/uploads/2018/08/6.1.png)
-
+建议：初学者建议读NtyCo，之后，可以再读微信协程库Libco
 
 #### compile
 
@@ -36,18 +30,3 @@ $ ./bin/nty_server_mulcore
 ```
 $ ./bin/nty_websocket_server
 ```
-
-#### bench
-```
-$ ./bin/nty_bench
-```
-![](http://bojing.wang/wp-content/uploads/2018/08/nty_bench_ntyco.png)
-![](http://bojing.wang/wp-content/uploads/2018/08/nty_bench_nginx.png)
-
-
-#### http server
-```
-$ ./bin/nty_http_server_mulcore
-```
-
-![](http://bojing.wang/wp-content/uploads/2018/08/ntyco_ab.png)![](http://bojing.wang/wp-content/uploads/2018/08/nginx_ab.png)
