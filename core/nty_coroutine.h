@@ -124,11 +124,20 @@ typedef struct _nty_coroutine_rbtree_sleep nty_coroutine_rbtree_sleep;
 typedef struct _nty_coroutine_rbtree_wait nty_coroutine_rbtree_wait;
 
 
+
+// 用户申请了一个stack协程栈
+// 还有一个ctx结构体，里面有各种寄存器指针，使用里面的指针bp\sp指向stack的栈顶，ip指向_exec(下一次要调用的函数入口)
+// 在switch时，执行寄存器帮我们执行汇编代码实现(保存现场store + 切换load)
+//     store: 将当前协程的现场，保存到栈中
+//     load : 寄存器切换到目标协程，开始执行
+
 // 寄存器，保存协程上下文
+// 上下文切换，就是将 CPU 的寄存器暂时保存，再将即将运行的协程的上下文寄存器，分别
+//    mov 到相对应的寄存器上。此时上下文完成切换
 typedef struct _nty_cpu_ctx {
-	void *esp; //
-	void *ebp;
-	void *eip;
+	void *esp; // 栈顶
+	void *ebp; // 栈基
+	void *eip; // 存储 CPU 运行下一条指令的地址（可以把回调函数的地址存储到 EIP 中，将相应的参数存储到相应的参数寄存器中）
 	void *edi;
 	void *esi;
 	void *ebx;
@@ -142,9 +151,9 @@ typedef struct _nty_cpu_ctx {
 // 调度器对象：全局唯一
 typedef struct _nty_schedule {
 	uint64_t    birth;  // 协程的创建时间
-	nty_cpu_ctx ctx;    // 保存调度器协程上下文
+	nty_cpu_ctx ctx;    // (协程上下文, 保存了寄存器组指令), 
 	
-	void  *stack;       // 协程栈：它是让每个协程【独立】的根本！就是把sp指针指向的栈顶位置
+	void  *stack;       // (申请的内存) 协程栈：它是让每个协程【独立】的根本！就是把sp指针指向的栈顶位置
 	size_t stack_size;  // 当前协程栈的大小（可以自己分配，最小1K，最大一般128K）
     
 	int      spawned_coroutines;  // 当前调度器中，一共存在协程的总数（协程创建时，+1；协程释放时，-1）
@@ -182,12 +191,12 @@ typedef struct _nty_coroutine {
 	uint64_t     birth;   // 创建时间
 	uint64_t     id;      // 协程唯一标识 ID
 
-	nty_cpu_ctx    ctx;   // CPU上下文，寄存器组：保存当前协程的协程上下文
+	nty_cpu_ctx    ctx;   // 协程上下文, 一系列指针 (指向协程栈)
+	void          *stack; // 协程栈：是每个协程相互独立的根本（就是sp指针指向的位置）
 	
 	proc_coroutine func;  // 协程函数，参数
 	void          *arg;
 
-	void  *stack;         // 协程栈：是每个协程相互独立的根本（就是sp指针指向的位置）
 	size_t stack_size;    // 还有一个栈大小！
 
 	size_t last_stack_size; 

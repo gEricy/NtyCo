@@ -158,16 +158,18 @@ void nty_coroutine_free(nty_coroutine *co) {
 }
 
 // 初始化协程：栈、状态
-static void nty_coroutine_init(nty_coroutine *co) {
-
+static void nty_coroutine_init(nty_coroutine *co) 
+{
 	void **stack = (void **)(co->stack + co->stack_size);
 
 	stack[-3] = NULL;
 	stack[-2] = (void *)co;
 
+    // 在协程切换的时候，只是把esp/ebp指针指向stack, eip指向当前运行位置
 	co->ctx.esp = (void*)stack - (4 * sizeof(void*));
 	co->ctx.ebp = (void*)stack - (3 * sizeof(void*));
-	co->ctx.eip = (void*)_exec;
+	co->ctx.eip = (void*)_exec; 
+    
 	co->status = BIT(NTY_COROUTINE_STATUS_READY);
 	
 }
@@ -287,6 +289,7 @@ int nty_coroutine_create(nty_coroutine **new_co, proc_coroutine func, void *arg)
 		return -2;
 	}
 
+    // 用户: 自己可以创建一个协程栈 (内存)
 	int ret = posix_memalign(&co->stack, getpagesize(), sched->stack_size);
 	if (ret) {
 		printf("Failed to allocate stack for new coroutine\n");
